@@ -621,8 +621,6 @@ serialization
 
 This separation keeps the vector implementation independent of the actual type being stored.
 
-At the core, VeC is essentially:
-
 That same mechanism can represent an integer vector, structure array, dynamic string, binary buffer, pointer list, or nested data structure.
 
 ## License
