@@ -27,6 +27,13 @@ void vec_reserve(Vector *v, size_t new_capacity) {
 }
 
 void vec_chop(Vector *v) {
+    if (v->length == 0) {
+        free(v->data);
+        v->data = NULL;
+        v->capacity = 0;
+        return;
+    }
+
     void *chopped_data;
     if (v->capacity != v->length) {
         chopped_data = reallocarray(v->data, v->length, v->element_size);
@@ -38,6 +45,9 @@ void vec_chop(Vector *v) {
 }
 
 Vector *vec_new(size_t element_size) {
+    if (element_size == 0)
+        return NULL;
+
     Vector *v = malloc(sizeof(Vector));
 
     if (v == NULL)
@@ -65,7 +75,9 @@ void vec_push(Vector *v, const void *data) {
     size_t new_length = v->length + 1;
 
     if (new_length > v->capacity) {
-        vec_reserve(v, v->capacity * 2);
+        size_t new_capacity = v->capacity == 0 ? 2 : v->capacity * 2;
+
+        vec_reserve(v, new_capacity);
     }
     memcpy(vec_element_at(v, v->length), data, v->element_size);
 
@@ -84,8 +96,11 @@ void vec_insert(Vector *v, size_t index, const void *data) {
     assert(index <= v->length);
 
     size_t new_length = v->length + 1;
+
     if (new_length > v->capacity) {
-        vec_reserve(v, v->capacity * 2);
+        size_t new_capacity = v->capacity == 0 ? 2 : v->capacity * 2;
+
+        vec_reserve(v, new_capacity);
     }
 
     // Shift the data by 1 to right.
@@ -103,7 +118,7 @@ void vec_delete(Vector *v, size_t index, void *out) {
     memcpy(out, vec_element_at(v, index), v->element_size);
 
     memmove(vec_element_at(v, index), vec_element_at(v, index + 1),
-            (v->length - index) * v->element_size);
+            (v->length - index - 1) * v->element_size);
 
     --v->length;
 }
