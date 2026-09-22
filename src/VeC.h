@@ -11,7 +11,13 @@ typedef struct {
 } Vector;
 
 Vector *vec_new(size_t element_size);
+void vec_reserve(Vector *v, size_t new_size);
+void vec_chop(Vector *v);
 void vec_free(Vector *v);
-void vec_push(Vector *v, void *data);
-void vec_display_elements_as_int(Vector *v);
-void vec_display_metadata(Vector *v);
+void vec_push(Vector *v, const void *data);
+void vec_pop(Vector *v, void *out);
+void vec_get(Vector *v, size_t index, void *out);
+void vec_set(Vector *v, size_t index, const void *replacement);
+void vec_insert(Vector *v, size_t index, const void *data);
+void vec_delete(Vector *v, size_t index, void *out);
+void vec_clear(Vector *v);
