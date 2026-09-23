@@ -2,19 +2,36 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-/* ------------------------------------------------------------
- * Helpers
- * ------------------------------------------------------------ */
 
 typedef struct {
     int id;
     double value;
 } Item;
 
+/* ------------------------------------------------------------
+ * Helpers
+ * ------------------------------------------------------------ */
+
+static void assert_int_vector(Vector *v, const int *expected, size_t length) {
+    assert(v->length == length);
+
+    for (size_t i = 0; i < length; ++i) {
+        int out = 0;
+        assert(vec_get(v, i, &out));
+        assert(out == expected[i]);
+    }
+}
+
+/* ------------------------------------------------------------
+ * Construction and destruction
+ * ------------------------------------------------------------ */
+
 static void test_new(void) {
     printf("[TEST] vec_new\n");
+
+    assert(vec_new(0) == NULL);
 
     Vector *v = vec_new(sizeof(int));
 
@@ -26,7 +43,6 @@ static void test_new(void) {
 
     vec_free(v);
 
-    /* Different element sizes */
     v = vec_new(sizeof(double));
 
     assert(v != NULL);
@@ -42,6 +58,10 @@ static void test_new(void) {
     vec_free(v);
 }
 
+/* ------------------------------------------------------------
+ * Push
+ * ------------------------------------------------------------ */
+
 static void test_push(void) {
     printf("[TEST] vec_push\n");
 
@@ -51,17 +71,12 @@ static void test_push(void) {
     int values[] = {10, 20, 30, 40, 50};
 
     for (size_t i = 0; i < 5; ++i)
-        vec_push(v, &values[i]);
+        assert(vec_push(v, &values[i]));
 
     assert(v->length == 5);
     assert(v->capacity == 8);
 
-    for (size_t i = 0; i < 5; ++i) {
-        int value;
-        vec_get(v, i, &value);
-
-        assert(value == values[i]);
-    }
+    assert_int_vector(v, values, 5);
 
     vec_free(v);
 }
@@ -73,19 +88,23 @@ static void test_push_exact_capacity(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 4; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     assert(v->length == 4);
     assert(v->capacity == 4);
 
     int value = 99;
-    vec_push(v, &value);
+    assert(vec_push(v, &value));
 
     assert(v->length == 5);
     assert(v->capacity == 8);
 
     vec_free(v);
 }
+
+/* ------------------------------------------------------------
+ * Pop
+ * ------------------------------------------------------------ */
 
 static void test_pop(void) {
     printf("[TEST] vec_pop\n");
@@ -96,24 +115,28 @@ static void test_pop(void) {
     int values[] = {10, 20, 30};
 
     for (size_t i = 0; i < 3; ++i)
-        vec_push(v, &values[i]);
+        assert(vec_push(v, &values[i]));
 
-    int out;
+    int out = 0;
 
-    vec_pop(v, &out);
+    assert(vec_pop(v, &out));
     assert(out == 30);
     assert(v->length == 2);
 
-    vec_pop(v, &out);
+    assert(vec_pop(v, &out));
     assert(out == 20);
     assert(v->length == 1);
 
-    vec_pop(v, &out);
+    assert(vec_pop(v, &out));
     assert(out == 10);
     assert(v->length == 0);
 
     vec_free(v);
 }
+
+/* ------------------------------------------------------------
+ * Get / Set
+ * ------------------------------------------------------------ */
 
 static void test_get(void) {
     printf("[TEST] vec_get\n");
@@ -124,15 +147,9 @@ static void test_get(void) {
     int values[] = {100, 200, 300, 400};
 
     for (size_t i = 0; i < 4; ++i)
-        vec_push(v, &values[i]);
+        assert(vec_push(v, &values[i]));
 
-    for (size_t i = 0; i < 4; ++i) {
-        int out = 0;
-
-        vec_get(v, i, &out);
-
-        assert(out == values[i]);
-    }
+    assert_int_vector(v, values, 4);
 
     vec_free(v);
 }
@@ -146,32 +163,32 @@ static void test_set(void) {
     int values[] = {10, 20, 30};
 
     for (size_t i = 0; i < 3; ++i)
-        vec_push(v, &values[i]);
+        assert(vec_push(v, &values[i]));
 
     int replacement = 999;
+    int out = 0;
 
-    vec_set(v, 0, &replacement);
-
-    int out;
-    vec_get(v, 0, &out);
-
+    assert(vec_set(v, 0, &replacement));
+    assert(vec_get(v, 0, &out));
     assert(out == 999);
 
-    vec_set(v, 1, &replacement);
-    vec_get(v, 1, &out);
-
+    assert(vec_set(v, 1, &replacement));
+    assert(vec_get(v, 1, &out));
     assert(out == 999);
 
-    vec_set(v, 2, &replacement);
-    vec_get(v, 2, &out);
-
+    assert(vec_set(v, 2, &replacement));
+    assert(vec_get(v, 2, &out));
     assert(out == 999);
 
-    /* Length must not change */
+    /* Length must not change. */
     assert(v->length == 3);
 
     vec_free(v);
 }
+
+/* ------------------------------------------------------------
+ * Insert
+ * ------------------------------------------------------------ */
 
 static void test_insert(void) {
     printf("[TEST] vec_insert\n");
@@ -182,49 +199,29 @@ static void test_insert(void) {
     int a = 20;
     int b = 30;
 
-    vec_push(v, &a);
-    vec_push(v, &b);
+    assert(vec_push(v, &a));
+    assert(vec_push(v, &b));
 
-    /* Insert at beginning */
+    /* Insert at beginning. */
     int first = 10;
-    vec_insert(v, 0, &first);
+    assert(vec_insert(v, 0, &first));
 
-    assert(v->length == 3);
+    int expected1[] = {10, 20, 30};
+    assert_int_vector(v, expected1, 3);
 
-    int expected[] = {10, 20, 30};
-
-    for (size_t i = 0; i < 3; ++i) {
-        int out;
-        vec_get(v, i, &out);
-
-        assert(out == expected[i]);
-    }
-
-    /* Insert in middle */
+    /* Insert in middle. */
     int middle = 25;
-    vec_insert(v, 2, &middle);
+    assert(vec_insert(v, 2, &middle));
 
     int expected2[] = {10, 20, 25, 30};
+    assert_int_vector(v, expected2, 4);
 
-    for (size_t i = 0; i < 4; ++i) {
-        int out;
-        vec_get(v, i, &out);
-
-        assert(out == expected2[i]);
-    }
-
-    /* Insert at end */
+    /* Insert at end. */
     int last = 40;
-    vec_insert(v, v->length, &last);
+    assert(vec_insert(v, v->length, &last));
 
     int expected3[] = {10, 20, 25, 30, 40};
-
-    for (size_t i = 0; i < 5; ++i) {
-        int out;
-        vec_get(v, i, &out);
-
-        assert(out == expected3[i]);
-    }
+    assert_int_vector(v, expected3, 5);
 
     vec_free(v);
 }
@@ -236,29 +233,25 @@ static void test_insert_growth(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 4; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     assert(v->capacity == 4);
 
     int value = 999;
-
-    vec_insert(v, 2, &value);
+    assert(vec_insert(v, 2, &value));
 
     assert(v->length == 5);
     assert(v->capacity == 8);
 
     int expected[] = {0, 1, 999, 2, 3};
-
-    for (size_t i = 0; i < 5; ++i) {
-        int out;
-
-        vec_get(v, i, &out);
-
-        assert(out == expected[i]);
-    }
+    assert_int_vector(v, expected, 5);
 
     vec_free(v);
 }
+
+/* ------------------------------------------------------------
+ * Delete
+ * ------------------------------------------------------------ */
 
 static void test_delete(void) {
     printf("[TEST] vec_delete\n");
@@ -269,51 +262,37 @@ static void test_delete(void) {
     int values[] = {10, 20, 30, 40, 50};
 
     for (size_t i = 0; i < 5; ++i)
-        vec_push(v, &values[i]);
+        assert(vec_push(v, &values[i]));
 
-    int out;
+    int out = 0;
 
-    /* Delete first */
-    vec_delete(v, 0, &out);
-
+    /* Delete first. */
+    assert(vec_delete(v, 0, &out));
     assert(out == 10);
-    assert(v->length == 4);
 
     int expected1[] = {20, 30, 40, 50};
+    assert_int_vector(v, expected1, 4);
 
-    for (size_t i = 0; i < 4; ++i) {
-        vec_get(v, i, &out);
-        assert(out == expected1[i]);
-    }
-
-    /* Delete middle */
-    vec_delete(v, 1, &out);
-
+    /* Delete middle. */
+    assert(vec_delete(v, 1, &out));
     assert(out == 30);
-    assert(v->length == 3);
 
     int expected2[] = {20, 40, 50};
+    assert_int_vector(v, expected2, 3);
 
-    for (size_t i = 0; i < 3; ++i) {
-        vec_get(v, i, &out);
-        assert(out == expected2[i]);
-    }
-
-    /* Delete last */
-    vec_delete(v, 2, &out);
-
+    /* Delete last. */
+    assert(vec_delete(v, 2, &out));
     assert(out == 50);
-    assert(v->length == 2);
 
     int expected3[] = {20, 40};
-
-    for (size_t i = 0; i < 2; ++i) {
-        vec_get(v, i, &out);
-        assert(out == expected3[i]);
-    }
+    assert_int_vector(v, expected3, 2);
 
     vec_free(v);
 }
+
+/* ------------------------------------------------------------
+ * Reserve
+ * ------------------------------------------------------------ */
 
 static void test_reserve(void) {
     printf("[TEST] vec_reserve\n");
@@ -323,46 +302,37 @@ static void test_reserve(void) {
 
     assert(v->capacity == 4);
 
-    vec_reserve(v, 100);
-
+    assert(vec_reserve(v, 100));
     assert(v->capacity == 100);
     assert(v->length == 0);
 
-    /* Reserving less must do nothing */
-    vec_reserve(v, 50);
-
+    /* Reserving less must succeed without changing capacity. */
+    assert(vec_reserve(v, 50));
     assert(v->capacity == 100);
 
-    /* Data must survive reallocation */
+    /* Reserving the same capacity must also succeed without moving data. */
+    void *old_data = v->data;
+    assert(vec_reserve(v, 100));
+    assert(v->capacity == 100);
+    assert(v->data == old_data);
+
+    /* Data must survive reallocation. */
     int value = 12345;
-    vec_push(v, &value);
+    assert(vec_push(v, &value));
 
-    vec_reserve(v, 200);
+    assert(vec_reserve(v, 200));
 
-    int out;
-    vec_get(v, 0, &out);
-
+    int out = 0;
+    assert(vec_get(v, 0, &out));
     assert(out == 12345);
     assert(v->capacity == 200);
 
     vec_free(v);
 }
 
-static void test_reserve_same_capacity(void) {
-    printf("[TEST] vec_reserve same capacity\n");
-
-    Vector *v = vec_new(sizeof(int));
-    assert(v != NULL);
-
-    void *old_data = v->data;
-
-    vec_reserve(v, v->capacity);
-
-    assert(v->capacity == 4);
-    assert(v->data == old_data);
-
-    vec_free(v);
-}
+/* ------------------------------------------------------------
+ * Chop
+ * ------------------------------------------------------------ */
 
 static void test_chop(void) {
     printf("[TEST] vec_chop\n");
@@ -371,30 +341,26 @@ static void test_chop(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 8; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     assert(v->length == 8);
     assert(v->capacity == 8);
 
-    vec_pop(v, &(int){0});
-    vec_pop(v, &(int){0});
-    vec_pop(v, &(int){0});
+    int out = 0;
+    assert(vec_pop(v, &out));
+    assert(vec_pop(v, &out));
+    assert(vec_pop(v, &out));
 
     assert(v->length == 5);
     assert(v->capacity == 8);
 
-    vec_chop(v);
+    assert(vec_chop(v));
 
     assert(v->length == 5);
     assert(v->capacity == 5);
 
-    for (size_t i = 0; i < 5; ++i) {
-        int out;
-
-        vec_get(v, i, &out);
-
-        assert(out == (int)i);
-    }
+    int expected[] = {0, 1, 2, 3, 4};
+    assert_int_vector(v, expected, 5);
 
     vec_free(v);
 }
@@ -406,13 +372,13 @@ static void test_chop_when_already_compact(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 4; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     assert(v->length == v->capacity);
 
     void *old_data = v->data;
 
-    vec_chop(v);
+    assert(vec_chop(v));
 
     assert(v->length == 4);
     assert(v->capacity == 4);
@@ -421,6 +387,29 @@ static void test_chop_when_already_compact(void) {
     vec_free(v);
 }
 
+static void test_chop_empty(void) {
+    printf("[TEST] vec_chop empty vector\n");
+
+    Vector *v = vec_new(sizeof(int));
+    assert(v != NULL);
+
+    assert(v->length == 0);
+    assert(v->capacity == 4);
+    assert(v->data != NULL);
+
+    assert(vec_chop(v));
+
+    assert(v->length == 0);
+    assert(v->capacity == 0);
+    assert(v->data == NULL);
+
+    vec_free(v);
+}
+
+/* ------------------------------------------------------------
+ * Clear and zero-capacity growth
+ * ------------------------------------------------------------ */
+
 static void test_clear(void) {
     printf("[TEST] vec_clear\n");
 
@@ -428,7 +417,7 @@ static void test_clear(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 10; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     size_t old_capacity = v->capacity;
 
@@ -437,17 +426,40 @@ static void test_clear(void) {
     assert(v->length == 0);
     assert(v->capacity == old_capacity);
 
-    /* Vector must still be usable */
+    /* Vector must still be usable. */
     int value = 999;
-
-    vec_push(v, &value);
+    assert(vec_push(v, &value));
 
     assert(v->length == 1);
 
-    int out;
-    vec_get(v, 0, &out);
-
+    int out = 0;
+    assert(vec_get(v, 0, &out));
     assert(out == 999);
+
+    vec_free(v);
+}
+
+static void test_zero_capacity_growth(void) {
+    printf("[TEST] zero-capacity growth after empty chop\n");
+
+    Vector *v = vec_new(sizeof(int));
+    assert(v != NULL);
+
+    assert(vec_chop(v));
+
+    assert(v->data == NULL);
+    assert(v->length == 0);
+    assert(v->capacity == 0);
+
+    int value = 123;
+    assert(vec_push(v, &value));
+
+    assert(v->length == 1);
+    assert(v->capacity == 2);
+
+    int out = 0;
+    assert(vec_get(v, 0, &out));
+    assert(out == 123);
 
     vec_free(v);
 }
@@ -465,39 +477,35 @@ static void test_struct(void) {
     Item items[] = {{1, 1.5}, {2, 2.5}, {3, 3.5}};
 
     for (size_t i = 0; i < 3; ++i)
-        vec_push(v, &items[i]);
+        assert(vec_push(v, &items[i]));
 
     assert(v->length == 3);
 
     Item out;
 
-    vec_get(v, 1, &out);
-
+    assert(vec_get(v, 1, &out));
     assert(out.id == 2);
     assert(out.value == 2.5);
 
     Item replacement = {99, 99.99};
 
-    vec_set(v, 1, &replacement);
-
-    vec_get(v, 1, &out);
+    assert(vec_set(v, 1, &replacement));
+    assert(vec_get(v, 1, &out));
 
     assert(out.id == 99);
     assert(out.value == 99.99);
 
     Item inserted = {50, 50.5};
 
-    vec_insert(v, 1, &inserted);
-
-    vec_get(v, 1, &out);
+    assert(vec_insert(v, 1, &inserted));
+    assert(vec_get(v, 1, &out));
 
     assert(out.id == 50);
     assert(out.value == 50.5);
 
     Item deleted;
 
-    vec_delete(v, 1, &deleted);
-
+    assert(vec_delete(v, 1, &deleted));
     assert(deleted.id == 50);
     assert(deleted.value == 50.5);
 
@@ -521,53 +529,48 @@ static void test_string_pointers(void) {
                        "generic vector"};
 
     for (size_t i = 0; i < 5; ++i)
-        vec_push(v, &strings[i]);
+        assert(vec_push(v, &strings[i]));
 
     assert(v->length == 5);
 
     for (size_t i = 0; i < 5; ++i) {
         char *out;
 
-        vec_get(v, i, &out);
-
+        assert(vec_get(v, i, &out));
         assert(out == strings[i]);
         assert(strcmp(out, strings[i]) == 0);
     }
 
-    /* Set */
+    /* Set. */
     char *replacement = "replacement";
 
-    vec_set(v, 2, &replacement);
+    assert(vec_set(v, 2, &replacement));
 
     char *out;
 
-    vec_get(v, 2, &out);
-
+    assert(vec_get(v, 2, &out));
     assert(out == replacement);
     assert(strcmp(out, "replacement") == 0);
 
-    /* Insert */
+    /* Insert. */
     char *inserted = "inserted";
 
-    vec_insert(v, 1, &inserted);
-
-    vec_get(v, 1, &out);
+    assert(vec_insert(v, 1, &inserted));
+    assert(vec_get(v, 1, &out));
 
     assert(out == inserted);
     assert(strcmp(out, "inserted") == 0);
 
-    /* Delete */
+    /* Delete. */
     char *deleted;
 
-    vec_delete(v, 1, &deleted);
-
+    assert(vec_delete(v, 1, &deleted));
     assert(deleted == inserted);
 
-    /* Pop */
+    /* Pop. */
     char *popped;
 
-    vec_pop(v, &popped);
-
+    assert(vec_pop(v, &popped));
     assert(popped == strings[4]);
     assert(strcmp(popped, "generic vector") == 0);
 
@@ -592,22 +595,20 @@ static void test_owned_string_pointers(void) {
     assert(b != NULL);
     assert(c != NULL);
 
-    vec_push(v, &a);
-    vec_push(v, &b);
-    vec_push(v, &c);
+    assert(vec_push(v, &a));
+    assert(vec_push(v, &b));
+    assert(vec_push(v, &c));
 
     assert(v->length == 3);
 
     char *out;
 
-    vec_get(v, 1, &out);
-
+    assert(vec_get(v, 1, &out));
     assert(strcmp(out, "beta") == 0);
 
     char *deleted;
 
-    vec_delete(v, 1, &deleted);
-
+    assert(vec_delete(v, 1, &deleted));
     assert(strcmp(deleted, "beta") == 0);
 
     /*
@@ -617,6 +618,51 @@ static void test_owned_string_pointers(void) {
     free(deleted);
     free(a);
     free(c);
+
+    vec_free(v);
+}
+
+/* ------------------------------------------------------------
+ * Invalid operation handling
+ * ------------------------------------------------------------ */
+
+static void test_invalid_operations(void) {
+    printf("[TEST] invalid operation handling\n");
+
+    Vector *v = vec_new(sizeof(int));
+    assert(v != NULL);
+
+    int value = 42;
+    assert(vec_push(v, &value));
+
+    int out = 999;
+
+    /* Get rejects indexes outside the current length. */
+    assert(!vec_get(v, 1, &out));
+    assert(out == 999);
+
+    /* Set and delete also reject indexes outside the current length. */
+    assert(!vec_set(v, 1, &value));
+    assert(!vec_delete(v, 1, &out));
+
+    /* Pop rejects an empty vector. */
+    assert(vec_pop(v, &out));
+    assert(out == 42);
+    assert(!vec_pop(v, &out));
+
+    /* Insert allows index == length, but rejects gaps. */
+    assert(v->length == 0);
+
+    int first = 10;
+    assert(vec_insert(v, 0, &first));
+    assert(v->length == 1);
+
+    int invalid = 20;
+    assert(!vec_insert(v, 2, &invalid));
+    assert(v->length == 1);
+
+    assert(vec_get(v, 0, &out));
+    assert(out == 10);
 
     vec_free(v);
 }
@@ -632,15 +678,14 @@ static void test_mixed_operations(void) {
     assert(v != NULL);
 
     for (int i = 0; i < 1000; ++i)
-        vec_push(v, &i);
+        assert(vec_push(v, &i));
 
     assert(v->length == 1000);
 
     for (int i = 0; i < 500; ++i) {
         int out;
 
-        vec_pop(v, &out);
-
+        assert(vec_pop(v, &out));
         assert(out == 999 - i);
     }
 
@@ -648,8 +693,7 @@ static void test_mixed_operations(void) {
 
     for (int i = 0; i < 100; ++i) {
         int value = -i;
-
-        vec_insert(v, 0, &value);
+        assert(vec_insert(v, 0, &value));
     }
 
     assert(v->length == 600);
@@ -657,8 +701,7 @@ static void test_mixed_operations(void) {
     for (int i = 0; i < 100; ++i) {
         int out;
 
-        vec_delete(v, 0, &out);
-
+        assert(vec_delete(v, 0, &out));
         assert(out == -99 + i);
     }
 
@@ -667,8 +710,7 @@ static void test_mixed_operations(void) {
     for (size_t i = 0; i < 500; ++i) {
         int out;
 
-        vec_get(v, i, &out);
-
+        assert(vec_get(v, i, &out));
         assert(out == (int)i);
     }
 
@@ -697,17 +739,20 @@ int main(void) {
     test_delete();
 
     test_reserve();
-    test_reserve_same_capacity();
 
     test_chop();
     test_chop_when_already_compact();
+    test_chop_empty();
 
     test_clear();
+    test_zero_capacity_growth();
 
     test_struct();
 
     test_string_pointers();
     test_owned_string_pointers();
+
+    test_invalid_operations();
 
     test_mixed_operations();
 
