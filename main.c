@@ -99,7 +99,7 @@ static void print_int_vector(const char *name, Vector *v) {
         /*
          * Copy one element from VeC into a caller-owned int.
          */
-        vec_get(v, i, &value);
+        assert(vec_get(v, i, &value));
 
         printf("%d", value);
 
@@ -127,7 +127,7 @@ static void print_string_vector(const char *name, Vector *v) {
         /*
          * Get the stored char * pointer.
          */
-        vec_get(v, i, &string);
+        assert(vec_get(v, i, &string));
 
         printf("\"%s\"", string);
 
@@ -150,7 +150,7 @@ static void print_point_vector(const char *name, Vector *v) {
         /*
          * Retrieve the complete structure.
          */
-        vec_get(v, i, &point);
+        assert(vec_get(v, i, &point));
 
         printf("(%d, %d)", point.x, point.y);
 
@@ -173,7 +173,7 @@ static void print_bytes(const char *name, Vector *v) {
     for (size_t i = 0; i < v->length; ++i) {
         unsigned char byte;
 
-        vec_get(v, i, &byte);
+        assert(vec_get(v, i, &byte));
 
         printf("%02X", byte);
 
@@ -196,7 +196,7 @@ static void string_append(Vector *string, const char *text) {
      * The terminator is added separately when needed.
      */
     for (size_t i = 0; text[i] != '\0'; ++i)
-        vec_push(string, &text[i]);
+        assert(vec_push(string, &text[i]));
 }
 
 /*
@@ -210,7 +210,7 @@ static void string_terminate(Vector *string) {
      */
     if (string->length == 0) {
         char nullByte = '\0';
-        vec_push(string, &nullByte);
+        assert(vec_push(string, &nullByte));
 
         return;
     }
@@ -220,7 +220,7 @@ static void string_terminate(Vector *string) {
      */
     char last;
 
-    vec_get(string, string->length - 1, &last);
+    assert(vec_get(string, string->length - 1, &last));
 
     /*
      * Add the terminator when necessary.
@@ -228,7 +228,7 @@ static void string_terminate(Vector *string) {
     if (last != '\0') {
         char nullByte = '\0';
 
-        vec_push(string, &nullByte);
+        assert(vec_push(string, &nullByte));
     }
 }
 
@@ -344,30 +344,30 @@ static void demo_builtin_types(void) {
      *
      * vec_push() copies exactly element_size bytes.
      */
-    vec_push(charVector, &character);
+    assert(vec_push(charVector, &character));
 
-    vec_push(signedCharVector, &signedCharacter);
-    vec_push(unsignedCharVector, &unsignedCharacter);
+    assert(vec_push(signedCharVector, &signedCharacter));
+    assert(vec_push(unsignedCharVector, &unsignedCharacter));
 
-    vec_push(shortVector, &shortValue);
-    vec_push(unsignedShortVector, &unsignedShortValue);
+    assert(vec_push(shortVector, &shortValue));
+    assert(vec_push(unsignedShortVector, &unsignedShortValue));
 
-    vec_push(intVector, &intValue);
-    vec_push(unsignedIntVector, &unsignedIntValue);
+    assert(vec_push(intVector, &intValue));
+    assert(vec_push(unsignedIntVector, &unsignedIntValue));
 
-    vec_push(longVector, &longValue);
-    vec_push(unsignedLongVector, &unsignedLongValue);
+    assert(vec_push(longVector, &longValue));
+    assert(vec_push(unsignedLongVector, &unsignedLongValue));
 
-    vec_push(longLongVector, &longLongValue);
-    vec_push(unsignedLongLongVector, &unsignedLongLongValue);
+    assert(vec_push(longLongVector, &longLongValue));
+    assert(vec_push(unsignedLongLongVector, &unsignedLongLongValue));
 
-    vec_push(floatVector, &floatValue);
-    vec_push(doubleVector, &doubleValue);
-    vec_push(longDoubleVector, &longDoubleValue);
+    assert(vec_push(floatVector, &floatValue));
+    assert(vec_push(doubleVector, &doubleValue));
+    assert(vec_push(longDoubleVector, &longDoubleValue));
 
-    vec_push(boolVector, &booleanValue);
+    assert(vec_push(boolVector, &booleanValue));
 
-    vec_push(complexVector, &complexValue);
+    assert(vec_push(complexVector, &complexValue));
 
     /*
      * Retrieve the values.
@@ -378,7 +378,7 @@ static void demo_builtin_types(void) {
     {
         char value;
 
-        vec_get(charVector, 0, &value);
+        assert(vec_get(charVector, 0, &value));
 
         printf("char                : %c\n", value);
     }
@@ -386,7 +386,7 @@ static void demo_builtin_types(void) {
     {
         signed char value;
 
-        vec_get(signedCharVector, 0, &value);
+        assert(vec_get(signedCharVector, 0, &value));
 
         printf("signed char         : %d\n", value);
     }
@@ -394,7 +394,7 @@ static void demo_builtin_types(void) {
     {
         unsigned char value;
 
-        vec_get(unsignedCharVector, 0, &value);
+        assert(vec_get(unsignedCharVector, 0, &value));
 
         printf("unsigned char       : %u\n", value);
     }
@@ -402,7 +402,7 @@ static void demo_builtin_types(void) {
     {
         short value;
 
-        vec_get(shortVector, 0, &value);
+        assert(vec_get(shortVector, 0, &value));
 
         printf("short               : %hd\n", value);
     }
@@ -410,7 +410,7 @@ static void demo_builtin_types(void) {
     {
         unsigned short value;
 
-        vec_get(unsignedShortVector, 0, &value);
+        assert(vec_get(unsignedShortVector, 0, &value));
 
         printf("unsigned short      : %hu\n", value);
     }
@@ -418,7 +418,7 @@ static void demo_builtin_types(void) {
     {
         int value;
 
-        vec_get(intVector, 0, &value);
+        assert(vec_get(intVector, 0, &value));
 
         printf("int                 : %d\n", value);
     }
@@ -426,7 +426,7 @@ static void demo_builtin_types(void) {
     {
         unsigned int value;
 
-        vec_get(unsignedIntVector, 0, &value);
+        assert(vec_get(unsignedIntVector, 0, &value));
 
         printf("unsigned int        : %u\n", value);
     }
@@ -434,7 +434,7 @@ static void demo_builtin_types(void) {
     {
         long value;
 
-        vec_get(longVector, 0, &value);
+        assert(vec_get(longVector, 0, &value));
 
         printf("long                : %ld\n", value);
     }
@@ -442,7 +442,7 @@ static void demo_builtin_types(void) {
     {
         unsigned long value;
 
-        vec_get(unsignedLongVector, 0, &value);
+        assert(vec_get(unsignedLongVector, 0, &value));
 
         printf("unsigned long       : %lu\n", value);
     }
@@ -450,7 +450,7 @@ static void demo_builtin_types(void) {
     {
         long long value;
 
-        vec_get(longLongVector, 0, &value);
+        assert(vec_get(longLongVector, 0, &value));
 
         printf("long long           : %lld\n", value);
     }
@@ -458,7 +458,7 @@ static void demo_builtin_types(void) {
     {
         unsigned long long value;
 
-        vec_get(unsignedLongLongVector, 0, &value);
+        assert(vec_get(unsignedLongLongVector, 0, &value));
 
         printf("unsigned long long  : %llu\n", value);
     }
@@ -466,7 +466,7 @@ static void demo_builtin_types(void) {
     {
         float value;
 
-        vec_get(floatVector, 0, &value);
+        assert(vec_get(floatVector, 0, &value));
 
         printf("float               : %.5f\n", value);
     }
@@ -474,7 +474,7 @@ static void demo_builtin_types(void) {
     {
         double value;
 
-        vec_get(doubleVector, 0, &value);
+        assert(vec_get(doubleVector, 0, &value));
 
         printf("double              : %.9f\n", value);
     }
@@ -482,7 +482,7 @@ static void demo_builtin_types(void) {
     {
         long double value;
 
-        vec_get(longDoubleVector, 0, &value);
+        assert(vec_get(longDoubleVector, 0, &value));
 
         printf("long double         : %.12Lf\n", value);
     }
@@ -490,7 +490,7 @@ static void demo_builtin_types(void) {
     {
         _Bool value;
 
-        vec_get(boolVector, 0, &value);
+        assert(vec_get(boolVector, 0, &value));
 
         printf("_Bool               : %s\n", value ? "true" : "false");
     }
@@ -498,7 +498,7 @@ static void demo_builtin_types(void) {
     {
         double _Complex value;
 
-        vec_get(complexVector, 0, &value);
+        assert(vec_get(complexVector, 0, &value));
 
         printf("double _Complex     : %.2f + %.2fi\n", creal(value),
                cimag(value));
@@ -561,7 +561,7 @@ static void demo_dynamic_array(void) {
      * VeC automatically reallocates when capacity is exhausted.
      */
     for (int i = 0; i < 20; ++i)
-        vec_push(numbers, &i);
+        assert(vec_push(numbers, &i));
 
     printf("Length after 20 pushes: %zu\n", numbers->length);
     printf("Capacity after growth : %zu\n", numbers->capacity);
@@ -573,7 +573,7 @@ static void demo_dynamic_array(void) {
      *
      * reserve() changes capacity, not logical length.
      */
-    vec_reserve(numbers, 100);
+    assert(vec_reserve(numbers, 100));
 
     printf("Capacity after reserve: %zu\n", numbers->capacity);
 
@@ -583,7 +583,7 @@ static void demo_dynamic_array(void) {
     for (int i = 0; i < 15; ++i) {
         int ignored;
 
-        vec_pop(numbers, &ignored);
+        assert(vec_pop(numbers, &ignored));
     }
 
     printf("After popping 15 elements:\n");
@@ -595,7 +595,7 @@ static void demo_dynamic_array(void) {
      *
      * chop() reduces capacity to the current length.
      */
-    vec_chop(numbers);
+    assert(vec_chop(numbers));
 
     printf("After chop:\n");
     printf("Length   : %zu\n", numbers->length);
@@ -635,9 +635,9 @@ static void demo_static_arrays(void) {
     /*
      * VeC copies all three integers from each array.
      */
-    vec_push(triples, &first);
-    vec_push(triples, &second);
-    vec_push(triples, &third);
+    assert(vec_push(triples, &first));
+    assert(vec_push(triples, &second));
+    assert(vec_push(triples, &third));
 
     /*
      * Fetch one complete array at a time.
@@ -645,7 +645,7 @@ static void demo_static_arrays(void) {
     for (size_t i = 0; i < triples->length; ++i) {
         int triple[3];
 
-        vec_get(triples, i, &triple);
+        assert(vec_get(triples, i, &triple));
 
         printf("[%d, %d, %d]\n", triple[0], triple[1], triple[2]);
     }
@@ -684,7 +684,7 @@ static void demo_dynamic_string(void) {
      * This is optional, but useful when the approximate final
      * size is known.
      */
-    vec_reserve(string, 64);
+    assert(vec_reserve(string, 64));
 
     /*
      * Build the string dynamically.
@@ -714,7 +714,7 @@ static void demo_dynamic_string(void) {
      */
     char replacement = 'h';
 
-    vec_set(string, 0, &replacement);
+    assert(vec_set(string, 0, &replacement));
 
     print_dynamic_string("after set", string);
 
@@ -723,9 +723,9 @@ static void demo_dynamic_string(void) {
      *
      * This lets us use ordinary vector operations on the text.
      */
-    int popped;
+    char popped;
 
-    vec_pop(string, (char *)&popped);
+    assert(vec_pop(string, &popped));
 
     /*
      * Insert characters into the string.
@@ -734,7 +734,7 @@ static void demo_dynamic_string(void) {
      */
     char inserted = '>';
 
-    vec_insert(string, 6, &inserted);
+    assert(vec_insert(string, 6, &inserted));
 
     /*
      * Put the null terminator back.
@@ -793,7 +793,7 @@ static void demo_byte_array(void) {
     /*
      * Reserve room for a small binary packet.
      */
-    vec_reserve(bytes, 32);
+    assert(vec_reserve(bytes, 32));
 
     /*
      * Example binary data.
@@ -806,7 +806,7 @@ static void demo_byte_array(void) {
      * Copy every byte into VeC.
      */
     for (size_t i = 0; i < sizeof(packet); ++i)
-        vec_push(bytes, &packet[i]);
+        assert(vec_push(bytes, &packet[i]));
 
     print_bytes("packet", bytes);
 
@@ -815,7 +815,7 @@ static void demo_byte_array(void) {
      */
     unsigned char byte;
 
-    vec_get(bytes, 3, &byte);
+    assert(vec_get(bytes, 3, &byte));
 
     printf("Byte at index 3: 0x%02X\n", byte);
 
@@ -824,7 +824,7 @@ static void demo_byte_array(void) {
      */
     unsigned char replacement = 0x55;
 
-    vec_set(bytes, 3, &replacement);
+    assert(vec_set(bytes, 3, &replacement));
 
     print_bytes("after set", bytes);
 
@@ -833,7 +833,7 @@ static void demo_byte_array(void) {
      */
     unsigned char inserted = 0xDE;
 
-    vec_insert(bytes, 2, &inserted);
+    assert(vec_insert(bytes, 2, &inserted));
 
     print_bytes("after insert", bytes);
 
@@ -842,7 +842,7 @@ static void demo_byte_array(void) {
      */
     unsigned char deleted;
 
-    vec_delete(bytes, 2, &deleted);
+    assert(vec_delete(bytes, 2, &deleted));
 
     printf("Deleted byte: 0x%02X\n", deleted);
 
@@ -853,7 +853,7 @@ static void demo_byte_array(void) {
      */
     unsigned char popped;
 
-    vec_pop(bytes, &popped);
+    assert(vec_pop(bytes, &popped));
 
     printf("Popped byte: 0x%02X\n", popped);
 
@@ -862,7 +862,7 @@ static void demo_byte_array(void) {
     /*
      * Shrink away unused capacity.
      */
-    vec_chop(bytes);
+    assert(vec_chop(bytes));
 
     printf("Length after chop   : %zu\n", bytes->length);
     printf("Capacity after chop : %zu\n", bytes->capacity);
@@ -898,9 +898,9 @@ static void demo_string_pointers(void) {
     char *world = "world";
     char *library = "VeC";
 
-    vec_push(strings, &hello);
-    vec_push(strings, &world);
-    vec_push(strings, &library);
+    assert(vec_push(strings, &hello));
+    assert(vec_push(strings, &world));
+    assert(vec_push(strings, &library));
 
     /*
      * These strings are dynamically allocated.
@@ -916,8 +916,8 @@ static void demo_string_pointers(void) {
     /*
      * Again, VeC stores the POINTERS, not the strings.
      */
-    vec_push(strings, &dynamicOne);
-    vec_push(strings, &dynamicTwo);
+    assert(vec_push(strings, &dynamicOne));
+    assert(vec_push(strings, &dynamicTwo));
 
     print_string_vector("strings", strings);
 
@@ -926,7 +926,7 @@ static void demo_string_pointers(void) {
      */
     char *replacement = "replacement";
 
-    vec_set(strings, 1, &replacement);
+    assert(vec_set(strings, 1, &replacement));
 
     print_string_vector("after set", strings);
 
@@ -935,7 +935,7 @@ static void demo_string_pointers(void) {
      */
     char *deleted;
 
-    vec_delete(strings, 3, &deleted);
+    assert(vec_delete(strings, 3, &deleted));
 
     printf("Deleted string: \"%s\"\n", deleted);
 
@@ -978,9 +978,9 @@ static void demo_structs(void) {
     /*
      * VeC copies the entire structure.
      */
-    vec_push(points, &first);
-    vec_push(points, &second);
-    vec_push(points, &third);
+    assert(vec_push(points, &first));
+    assert(vec_push(points, &second));
+    assert(vec_push(points, &third));
 
     print_point_vector("points", points);
 
@@ -989,7 +989,7 @@ static void demo_structs(void) {
      */
     Point replacement = {100, 200};
 
-    vec_set(points, 1, &replacement);
+    assert(vec_set(points, 1, &replacement));
 
     print_point_vector("after set", points);
 
@@ -998,7 +998,7 @@ static void demo_structs(void) {
      */
     Point inserted = {50, 50};
 
-    vec_insert(points, 1, &inserted);
+    assert(vec_insert(points, 1, &inserted));
 
     print_point_vector("after insert", points);
 
@@ -1007,7 +1007,7 @@ static void demo_structs(void) {
      */
     Point deleted;
 
-    vec_delete(points, 0, &deleted);
+    assert(vec_delete(points, 0, &deleted));
 
     printf("Deleted point: (%d, %d)\n", deleted.x, deleted.y);
 
@@ -1053,9 +1053,9 @@ static void demo_complex_struct(void) {
     /*
      * Store the complete structures.
      */
-    vec_push(students, &alice);
-    vec_push(students, &bob);
-    vec_push(students, &charlie);
+    assert(vec_push(students, &alice));
+    assert(vec_push(students, &bob));
+    assert(vec_push(students, &charlie));
 
     /*
      * Retrieve complete Student objects.
@@ -1063,7 +1063,7 @@ static void demo_complex_struct(void) {
     for (size_t i = 0; i < students->length; ++i) {
         Student student;
 
-        vec_get(students, i, &student);
+        assert(vec_get(students, i, &student));
 
         printf("ID=%d Name=%s Score=%.2f\n", student.id, student.name,
                student.score);
@@ -1093,14 +1093,14 @@ static void demo_enum_and_union(void) {
     Status running = STATUS_RUNNING;
     Status done = STATUS_DONE;
 
-    vec_push(statuses, &idle);
-    vec_push(statuses, &running);
-    vec_push(statuses, &done);
+    assert(vec_push(statuses, &idle));
+    assert(vec_push(statuses, &running));
+    assert(vec_push(statuses, &done));
 
     for (size_t i = 0; i < statuses->length; ++i) {
         Status status;
 
-        vec_get(statuses, i, &status);
+        assert(vec_get(statuses, i, &status));
 
         printf("Status %zu: %d\n", i, status);
     }
@@ -1123,9 +1123,9 @@ static void demo_enum_and_union(void) {
     /*
      * Store the complete union objects.
      */
-    vec_push(values, &integerValue);
-    vec_push(values, &floatingValue);
-    vec_push(values, &characterValue);
+    assert(vec_push(values, &integerValue));
+    assert(vec_push(values, &floatingValue));
+    assert(vec_push(values, &characterValue));
 
     /*
      * Read the corresponding active member.
@@ -1134,13 +1134,13 @@ static void demo_enum_and_union(void) {
      */
     Value out;
 
-    vec_get(values, 0, &out);
+    assert(vec_get(values, 0, &out));
     printf("Union integer   : %d\n", out.integer);
 
-    vec_get(values, 1, &out);
+    assert(vec_get(values, 1, &out));
     printf("Union float     : %.2f\n", out.floating);
 
-    vec_get(values, 2, &out);
+    assert(vec_get(values, 2, &out));
     printf("Union character : %c\n", out.character);
 
     vec_free(values);
@@ -1180,26 +1180,26 @@ static void demo_nested_vectors(void) {
      * Fill the first row.
      */
     for (int i = 1; i <= 3; ++i)
-        vec_push(rowOne, &i);
+        assert(vec_push(rowOne, &i));
 
     /*
      * Fill the second row.
      */
     for (int i = 4; i <= 6; ++i)
-        vec_push(rowTwo, &i);
+        assert(vec_push(rowTwo, &i));
 
     /*
      * Fill the third row.
      */
     for (int i = 7; i <= 9; ++i)
-        vec_push(rowThree, &i);
+        assert(vec_push(rowThree, &i));
 
     /*
      * Store the child-vector pointers in the outer vector.
      */
-    vec_push(matrix, &rowOne);
-    vec_push(matrix, &rowTwo);
-    vec_push(matrix, &rowThree);
+    assert(vec_push(matrix, &rowOne));
+    assert(vec_push(matrix, &rowTwo));
+    assert(vec_push(matrix, &rowThree));
 
     /*
      * Traverse the outer vector.
@@ -1212,7 +1212,7 @@ static void demo_nested_vectors(void) {
         /*
          * Fetch one Vector * from the outer vector.
          */
-        vec_get(matrix, row, &currentRow);
+        assert(vec_get(matrix, row, &currentRow));
 
         printf("[ ");
 
@@ -1223,7 +1223,7 @@ static void demo_nested_vectors(void) {
 
             int value;
 
-            vec_get(currentRow, column, &value);
+            assert(vec_get(currentRow, column, &value));
 
             printf("%d ", value);
         }
@@ -1312,9 +1312,9 @@ static void demo_dynamic_arrays_inside_vector(void) {
      *
      * Only the pointer values are copied into the vector.
      */
-    vec_push(arrays, &arrayOne);
-    vec_push(arrays, &arrayTwo);
-    vec_push(arrays, &arrayThree);
+    assert(vec_push(arrays, &arrayOne));
+    assert(vec_push(arrays, &arrayTwo));
+    assert(vec_push(arrays, &arrayThree));
 
     /*
      * Traverse the pointer vector and then access each
@@ -1323,7 +1323,7 @@ static void demo_dynamic_arrays_inside_vector(void) {
     for (size_t i = 0; i < arrays->length; ++i) {
         int *array;
 
-        vec_get(arrays, i, &array);
+        assert(vec_get(arrays, i, &array));
 
         printf("Array %zu: [ ", i);
 
@@ -1382,22 +1382,22 @@ static void demo_generic_pointers(void) {
     /*
      * Store the pointers.
      */
-    vec_push(pointers, &integerPointer);
-    vec_push(pointers, &realPointer);
-    vec_push(pointers, &characterPointer);
+    assert(vec_push(pointers, &integerPointer));
+    assert(vec_push(pointers, &realPointer));
+    assert(vec_push(pointers, &characterPointer));
 
     /*
      * Retrieve them and cast back to the correct type.
      */
     void *out;
 
-    vec_get(pointers, 0, &out);
+    assert(vec_get(pointers, 0, &out));
     printf("int pointer     : %d\n", *(int *)out);
 
-    vec_get(pointers, 1, &out);
+    assert(vec_get(pointers, 1, &out));
     printf("double pointer  : %.5f\n", *(double *)out);
 
-    vec_get(pointers, 2, &out);
+    assert(vec_get(pointers, 2, &out));
     printf("char pointer    : %c\n", *(char *)out);
 
     vec_free(pointers);
@@ -1459,7 +1459,7 @@ static void demo_string_to_bytes(void) {
      */
     char replacement = 'v';
 
-    vec_set(buffer, 6, &replacement);
+    assert(vec_set(buffer, 6, &replacement));
 
     printf("Modified string: %s\n", (char *)buffer->data);
 
@@ -1508,7 +1508,7 @@ static void demo_binary_data(void) {
      * Add every byte.
      */
     for (size_t i = 0; i < sizeof(binary); ++i)
-        vec_push(data, &binary[i]);
+        assert(vec_push(data, &binary[i]));
 
     print_bytes("binary", data);
 
@@ -1518,21 +1518,21 @@ static void demo_binary_data(void) {
     unsigned char extra[] = {0x10, 0x20, 0x30, 0x40};
 
     for (size_t i = 0; i < sizeof(extra); ++i)
-        vec_push(data, &extra[i]);
+        assert(vec_push(data, &extra[i]));
 
     print_bytes("after growth", data);
 
     /*
      * Reserve even more room if a larger packet is expected.
      */
-    vec_reserve(data, 128);
+    assert(vec_reserve(data, 128));
 
     printf("Reserved capacity: %zu\n", data->capacity);
 
     /*
      * Once the final length is known, remove unused capacity.
      */
-    vec_chop(data);
+    assert(vec_chop(data));
 
     printf("Capacity after chop: %zu\n", data->capacity);
 
@@ -1562,7 +1562,7 @@ static void demo_all_operations(void) {
      * Append to the end.
      */
     for (int i = 1; i <= 5; ++i)
-        vec_push(numbers, &i);
+        assert(vec_push(numbers, &i));
 
     print_int_vector("initial", numbers);
 
@@ -1573,7 +1573,7 @@ static void demo_all_operations(void) {
      */
     int inserted = 99;
 
-    vec_insert(numbers, 2, &inserted);
+    assert(vec_insert(numbers, 2, &inserted));
 
     print_int_vector("after insert", numbers);
 
@@ -1584,7 +1584,7 @@ static void demo_all_operations(void) {
      */
     int fetched;
 
-    vec_get(numbers, 3, &fetched);
+    assert(vec_get(numbers, 3, &fetched));
 
     printf("Fetched index 3: %d\n", fetched);
 
@@ -1595,7 +1595,7 @@ static void demo_all_operations(void) {
      */
     int replacement = 55;
 
-    vec_set(numbers, 0, &replacement);
+    assert(vec_set(numbers, 0, &replacement));
 
     print_int_vector("after set", numbers);
 
@@ -1606,7 +1606,7 @@ static void demo_all_operations(void) {
      */
     int deleted;
 
-    vec_delete(numbers, 1, &deleted);
+    assert(vec_delete(numbers, 1, &deleted));
 
     printf("Deleted index 1: %d\n", deleted);
 
@@ -1619,7 +1619,7 @@ static void demo_all_operations(void) {
      */
     int popped;
 
-    vec_pop(numbers, &popped);
+    assert(vec_pop(numbers, &popped));
 
     printf("Popped element: %d\n", popped);
 
@@ -1632,7 +1632,7 @@ static void demo_all_operations(void) {
      */
     printf("Capacity before reserve: %zu\n", numbers->capacity);
 
-    vec_reserve(numbers, 50);
+    assert(vec_reserve(numbers, 50));
 
     printf("Capacity after reserve : %zu\n", numbers->capacity);
 
@@ -1641,7 +1641,7 @@ static void demo_all_operations(void) {
      *
      * Remove unused capacity.
      */
-    vec_chop(numbers);
+    assert(vec_chop(numbers));
 
     printf("Capacity after chop    : %zu\n", numbers->capacity);
 

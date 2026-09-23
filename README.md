@@ -14,7 +14,7 @@ It provides a contiguous, dynamically growing array that can store elements of a
 - Append and remove operations
 - Random access
 - Element replacement
-- Insertion and deletion at arbitrary indexes
+- Insertion and deletion at valid indexes
 - Clear without freeing the underlying allocation
 - Support for built-in C types
 - Support for structures, arrays, pointers, and nested vectors
@@ -29,21 +29,23 @@ VeC/
 │   └── VeC.h
 ├── tests/
 │   └── test_VeC.c
-├── main.c
-└── README.md
+├── LICENSE
+├── README.md
+├── build.sh
+└── main.c
 ```
 
 `src/VeC.c`
-: Library implementation.
+: Core library implementation containing VeC's dynamic vector operations and memory management.
 
 `src/VeC.h`
-: Public API and `Vector` definition.
+: Public API and `Vector` structure definition.
 
 `tests/test_VeC.c`
-: Automated test suite covering the library's core operations and several element types.
+: Automated test suite covering VeC's core operations, edge cases, and various element types.
 
 `main.c`
-: Interactive-style showcase demonstrating different ways VeC can be used.
+: Demonstration program showcasing different ways VeC can be used.
 
 ## Vector Structure
 
@@ -91,7 +93,8 @@ Push values into it:
 ```c
 int value = 42;
 
-vec_push(numbers, &value);
+if (!vec_push(numbers, &value))
+    return 1;
 ```
 
 Retrieve a value:
@@ -99,7 +102,8 @@ Retrieve a value:
 ```c
 int result;
 
-vec_get(numbers, 0, &result);
+if (!vec_get(numbers, 0, &result))
+    return 1;
 ```
 
 Release the vector:
@@ -121,13 +125,20 @@ int main(void) {
     if (numbers == NULL)
         return 1;
 
-    for (int i = 0; i < 10; ++i)
-        vec_push(numbers, &i);
+    for (int i = 0; i < 10; ++i) {
+        if (!vec_push(numbers, &i)) {
+            vec_free(numbers);
+            return 1;
+        }
+    }
 
     for (size_t i = 0; i < numbers->length; ++i) {
         int value;
 
-        vec_get(numbers, i, &value);
+        if (!vec_get(numbers, i, &value)) {
+            vec_free(numbers);
+            return 1;
+        }
 
         printf("%d\n", value);
     }
@@ -140,6 +151,12 @@ int main(void) {
 
 ## API
 
+Operations that can fail return `true` on success and `false` on failure.
+
+Failure can occur because of invalid indexes or memory allocation failure.
+
+`vec_reserve()` also returns `true` when the requested capacity is already available and no reallocation is necessary.
+
 ### `vec_new`
 
 ```c
@@ -148,26 +165,34 @@ Vector *vec_new(size_t element_size);
 
 Creates an empty vector where every element occupies `element_size` bytes.
 
+Returns `NULL` if `element_size` is zero or memory allocation fails.
+
 Example:
 
 ```c
 Vector *v = vec_new(sizeof(double));
+
+if (v == NULL)
+    return 1;
 ```
 
-The vector starts empty with an initial capacity.
+The vector starts empty with an initial capacity of 4 elements.
 
 ### `vec_reserve`
 
 ```c
-void vec_reserve(Vector *v, size_t new_size);
+bool vec_reserve(Vector *v, size_t new_capacity);
 ```
 
-Increases the vector's capacity when `new_size` is larger than the current capacity.
+Increases the vector's capacity when `new_capacity` is larger than the current capacity.
 
 It does not change `length`.
 
+Returns `true` when the requested capacity is already available or when the allocation succeeds. Returns `false` if the allocation fails.
+
 ```c
-vec_reserve(v, 1024);
+if (!vec_reserve(v, 1024))
+    return 1;
 ```
 
 This is useful when the approximate number of elements is known in advance and repeated reallocations should be reduced.
@@ -175,7 +200,7 @@ This is useful when the approximate number of elements is known in advance and r
 ### `vec_chop`
 
 ```c
-void vec_chop(Vector *v);
+bool vec_chop(Vector *v);
 ```
 
 Shrinks the allocation so that capacity matches the current length.
@@ -192,10 +217,25 @@ length   = 20
 capacity = 20
 ```
 
+If the vector is empty, `vec_chop()` releases its data allocation and sets the capacity to zero:
+
+```text
+length   = 0
+capacity = 4
+
+vec_chop()
+
+length   = 0
+capacity = 0
+data     = NULL
+```
+
+Returns `true` when the operation succeeds and `false` if shrinking the allocation fails.
+
 ### `vec_push`
 
 ```c
-void vec_push(Vector *v, const void *data);
+bool vec_push(Vector *v, const void *data);
 ```
 
 Appends one element to the end of the vector.
@@ -204,55 +244,68 @@ VeC copies `element_size` bytes from `data` into its own storage.
 
 ```c
 int value = 100;
-vec_push(v, &value);
+
+if (!vec_push(v, &value))
+    return 1;
 ```
+
+Capacity grows automatically when the current allocation is full.
 
 ### `vec_pop`
 
 ```c
-void vec_pop(Vector *v, void *out);
+bool vec_pop(Vector *v, void *out);
 ```
 
 Removes the final element and copies it into caller-provided storage.
 
+Returns `false` when the vector is empty.
+
 ```c
 int value;
 
-vec_pop(v, &value);
+if (!vec_pop(v, &value))
+    return 1;
 ```
 
 ### `vec_get`
 
 ```c
-void vec_get(Vector *v, size_t index, void *out);
+bool vec_get(Vector *v, size_t index, void *out);
 ```
 
 Copies the element at `index` into caller-provided storage.
 
+Returns `false` when `index` is outside the current length.
+
 ```c
 double value;
 
-vec_get(v, 3, &value);
+if (!vec_get(v, 3, &value))
+    return 1;
 ```
 
 ### `vec_set`
 
 ```c
-void vec_set(Vector *v, size_t index, const void *replacement);
+bool vec_set(Vector *v, size_t index, const void *replacement);
 ```
 
 Replaces the element at `index`.
 
+Returns `false` when `index` is outside the current length.
+
 ```c
 int replacement = 50;
 
-vec_set(v, 2, &replacement);
+if (!vec_set(v, 2, &replacement))
+    return 1;
 ```
 
 ### `vec_insert`
 
 ```c
-void vec_insert(Vector *v, size_t index, const void *data);
+bool vec_insert(Vector *v, size_t index, const void *data);
 ```
 
 Inserts an element at `index`.
@@ -262,23 +315,29 @@ Existing elements at and after that index are shifted toward the end.
 ```c
 int value = 99;
 
-vec_insert(v, 2, &value);
+if (!vec_insert(v, 2, &value))
+    return 1;
 ```
 
 `index == length` is valid and behaves like appending an element.
 
+Indexes greater than `length` are rejected, preventing gaps in the vector.
+
 ### `vec_delete`
 
 ```c
-void vec_delete(Vector *v, size_t index, void *out);
+bool vec_delete(Vector *v, size_t index, void *out);
 ```
 
 Removes the element at `index` and copies the removed value into caller-provided storage.
 
+Returns `false` when `index` is outside the current length.
+
 ```c
 int deleted;
 
-vec_delete(v, 2, &deleted);
+if (!vec_delete(v, 2, &deleted))
+    return 1;
 ```
 
 ### `vec_clear`
@@ -300,6 +359,8 @@ after:
 length   = 0
 capacity = 64
 ```
+
+Unlike `vec_chop()`, `vec_clear()` does not release unused capacity.
 
 ### `vec_free`
 
@@ -393,6 +454,7 @@ Characters can be appended dynamically:
 
 ```c
 char c = 'H';
+
 vec_push(string, &c);
 ```
 
@@ -594,7 +656,7 @@ Run it with:
 ./bin/test_VeC
 ```
 
-The test suite exercises the core API across normal cases, boundary cases, generic structures, string pointers, and mixed-operation workloads.
+The test suite exercises the core API across normal cases, boundary cases, invalid operations, zero-capacity behavior, generic structures, string pointers, and mixed-operation workloads.
 
 ## Design Philosophy
 
